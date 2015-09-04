@@ -1,0 +1,3 @@
+#!/usr/bin/env ruby
+require 'neo2vim'
+Neo2Vim.new(ARGV[0], ARGV[1])

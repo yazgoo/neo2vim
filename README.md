@@ -4,7 +4,7 @@ aims at translating neovim python plugins into vim plugins
     
     gem install neo2vim
 
-    (using https://rubygems.org/gems/neo2vim)
+([rubygems.org](https://rubygems.org/gems/neo2vim) web page of the gem)
 
 # usage
 

@@ -8,6 +8,14 @@ aims at translating neovim python plugins into vim plugins
 
 # usage
 
-    neo2vim /path/to/input/plugin.py /path/to/output/plugin.vim
+    neo2vim /path/to/input/plugin.py /path/to/output_dir
+
+# File structure
+
+`NAME` is extracted from neovim plugin class name.
+
+* `plugin/{NAME}.vim`: Definitions of autocommands, commands, and functions
+* `autoload/{NAME}.vim`: VimScript-Python bridge
+* `autoload/{NAME}.vim.py`: Plugin implementation
 
 

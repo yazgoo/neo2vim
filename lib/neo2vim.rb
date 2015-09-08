@@ -18,6 +18,9 @@ class Neo2Vim
     def method_name line
         line.chomp.gsub(/^ *[^ ]* /, "").gsub(/\(.*/, "")
     end
+    def to_snake name
+        name.gsub(/([a-z\d])([A-Z])/, '\1_\2').downcase
+    end
     def on_line line
         line.gsub!("import neovim", "import vim")
         line.gsub!(/.*if neovim$*/, "")
@@ -25,6 +28,7 @@ class Neo2Vim
         case @state
         when :plugin_class_definiton
             @plugin_class_name = line.chomp.gsub(/^[^ ]* /, "").gsub(/\(.*/, "")
+            @plugin_id = to_snake(@plugin_class_name)
             @state = :normal
         when :plugin_method_definition
             @names.each do |name|
@@ -43,6 +47,7 @@ class Neo2Vim
         @stores = {}
         @store = {}
         @plugin_class_name = nil
+        @plugin_id = nil
         @state = :normal
         run source, destination
     end
@@ -51,7 +56,7 @@ class Neo2Vim
                 @stores[what].each do |k, v|
                     @dst.puts "fun! #{what == "function"?"":"En"}#{what == "function" ? v : k}(arg0, arg1)
 python <<EOF
-r = plugin.#{k}([vim.eval('a:arg0'), vim.eval('a:arg1')])
+r = #{@plugin_id}_plugin.#{k}([vim.eval('a:arg0'), vim.eval('a:arg1')])
 vim.command('let g:__result = ' + json.dumps(([] if r == None else r)))
 EOF
 let res = g:__result
@@ -60,7 +65,7 @@ return res
 endfun"
                 end
             end
-@dst.puts "augroup Poi
+@dst.puts "augroup #{@plugin_id}
     autocmd!"
 @stores["autocmd"].each do |k, v|
     @dst.puts "    autocmd #{v} * call En#{k}('', '')"
@@ -84,7 +89,7 @@ end
                     end
                 end
             end
-            dst.puts "plugin = #{@plugin_class_name}(vim)"
+            dst.puts "#{@plugin_id}_plugin = #{@plugin_class_name}(vim)"
             dst.puts "EOF"
             declarations
         end

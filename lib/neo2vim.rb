@@ -5,13 +5,14 @@ class Neo2Vim
     end
     def on_neovim_line line
         if line.include? "plugin"
-            @plugin_name = true
+            @state = :plugin_class_definiton
         else
             @names.each do |name|
                 if line.include? name
                     @store[name] = neovim_annotation line
                 end
             end
+            @state = :plugin_method_definition
         end
     end
     def method_name line
@@ -21,9 +22,11 @@ class Neo2Vim
         line.gsub!("import neovim", "import vim")
         line.gsub!(/.*if neovim$*/, "")
         @dst.write  line
-        if @plugin_name == true
-            @plugin_name = line.chomp.gsub(/^[^ ]* /, "").gsub(/\(.*/, "")
-        else
+        case @state
+        when :plugin_class_definiton
+            @plugin_class_name = line.chomp.gsub(/^[^ ]* /, "").gsub(/\(.*/, "")
+            @state = :normal
+        when :plugin_method_definition
             @names.each do |name|
                 if @store[name]
                     @stores[name] ||= {}
@@ -31,13 +34,16 @@ class Neo2Vim
                     @store[name] = nil
                 end
             end
+            @state = :normal
+        when :normal
         end
     end
     def initialize source, destination
         @names = ["function", "command", "autocmd"]
         @stores = {}
         @store = {}
-        @plugin_name = nil
+        @plugin_class_name = nil
+        @state = :normal
         run source, destination
     end
     def declarations
@@ -78,7 +84,7 @@ end
                     end
                 end
             end
-            dst.puts "plugin = #{@plugin_name}(vim)"
+            dst.puts "plugin = #{@plugin_class_name}(vim)"
             dst.puts "EOF"
             declarations
         end

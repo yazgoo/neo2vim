@@ -56,7 +56,7 @@ class Neo2Vim
         contents.autoload_py.write line
         case @state
         when :plugin_class_definiton
-            @plugin_class_name = line.chomp.gsub(/^[^ ]* /, "").gsub(/\(.*/, "")
+            @plugin_class_name = line.chomp.gsub(/^class\s+(\w+).*$/, '\1')
             @plugin_id = to_snake(@plugin_class_name)
             @state = :normal
         when :plugin_method_definition

@@ -109,7 +109,8 @@ augroup #{@plugin_id}
         contents.plugin.puts
 
         @stores["command"].each do |k, v|
-            contents.plugin.puts "command! -nargs=0 #{v[:annotation][:name]} call #{@plugin_id}\##{k}([])"
+            # TODO: args/range argument is dummy
+            contents.plugin.puts "command! -nargs=0 #{v[:annotation][:name]} call #{@plugin_id}\##{k}('', '')"
         end
         contents.plugin.puts
 

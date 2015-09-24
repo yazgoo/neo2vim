@@ -17,8 +17,13 @@ class Neo2Vim
 
 
     def neovim_annotation line
-        if line =~ /^\s*@neovim\.(\w+)\('(\w+)'.*/
-            {type: $1, name: $2}
+        # Supported pattern: @neovim.{type}({name}, attr1 = value1, attr2 = value2, ...)
+        if line =~ /^\s*@neovim\.(\w+)\(((?:'\w+')|(?:"\w+"))(.+)/
+            basic = {type: $1, name: $2[1..-2]}
+            args = $3.scan(/\s*,\s*(\w+)\s*=\s*((?:'[^']*')|(?:"[^"]*"))/).map {|name, value|
+              [name.to_sym, value[1..-2]]
+            }.to_h
+            basic.merge(args)
         else
             nil
         end
@@ -102,15 +107,25 @@ augroup #{@plugin_id}
         EOS
         @stores["autocmd"].each do |k, v|
             contents.plugin.puts <<-EOS
-    autocmd #{v[:annotation][:name]} * call #{@plugin_id}\##{k}(expand('<afile>'))
+    autocmd #{v[:annotation][:name]} #{v[:annotation][:pattern] || '*'} call #{@plugin_id}\##{k}(#{v[:annotation][:eval] || "expand('<afile>')"})
             EOS
         end
         contents.plugin.puts "augroup END"
         contents.plugin.puts
 
         @stores["command"].each do |k, v|
-            # TODO: args/range argument is dummy
-            contents.plugin.puts "command! -nargs=0 #{v[:annotation][:name]} call #{@plugin_id}\##{k}('', '')"
+            range =
+              case v[:annotation][:range]
+              when ''
+                "-range"
+              when nil
+                ""
+              else
+                "-range=#{v[:annotation][:range]}"
+              end
+            nargs = "-nargs=#{v[:annotation][:nargs] || '0'}"
+            # TODO: range argument is dummy
+            contents.plugin.puts "command! #{nargs} #{range} #{v[:annotation][:name]} call #{@plugin_id}\##{k}([<f-args>], '')"
         end
         contents.plugin.puts
 

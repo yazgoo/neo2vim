@@ -20,9 +20,9 @@ class Neo2Vim
         # Supported pattern: @neovim.{type}({name}, attr1 = value1, attr2 = value2, ...)
         if line =~ /^\s*@neovim\.(\w+)\(((?:'\w+')|(?:"\w+"))(.+)/
             basic = {type: $1, name: $2[1..-2]}
-            args = $3.scan(/\s*,\s*(\w+)\s*=\s*((?:'[^']*')|(?:"[^"]*"))/).map {|name, value|
+            args = Hash[$3.scan(/\s*,\s*(\w+)\s*=\s*((?:'[^']*')|(?:"[^"]*"))/).map {|name, value|
               [name.to_sym, value[1..-2]]
-            }.to_h
+            }]
             basic.merge(args)
         else
             nil
@@ -82,7 +82,7 @@ class Neo2Vim
     end
     def initialize source, destination
         @names = ["autoload_function", "function", "command", "autocmd"]
-        @stores = @names.map {|name| [name, {}]}.to_h
+        @stores = Hash[@names.map{|name| [name, {}]}]
         @annotation = nil
         @plugin_class_name = nil
         @in_plugin_class = false

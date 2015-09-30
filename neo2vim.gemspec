@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'neo2vim'
-  s.version     = '0.0.1'
+  s.version     = '0.0.6'
   s.executables << "neo2vim"
   s.date        = '2015-09-04'
   s.summary     = "neo2vim"

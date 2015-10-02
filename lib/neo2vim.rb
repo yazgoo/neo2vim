@@ -131,8 +131,8 @@ augroup #{@plugin_id}
 
         @stores["function"].each do |k, v|
             contents.plugin.puts <<-EOS
-function! #{v[:annotation][:name]}(#{v[:args].join(", ")}) abort
-    return #{@plugin_id}##{k}(#{v[:args].map{|a| "a:" + a}.join(", ")})
+function! #{v[:annotation][:name]}(...) abort
+    return #{@plugin_id}##{k}(a:000)
 endfunction
             EOS
         end
